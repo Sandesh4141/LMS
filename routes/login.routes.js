@@ -3,58 +3,44 @@ import pool from "../db/db.js";
 
 const router = express.Router();
 
-// Login endpoint
 router.post("/", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, role } = req.body;
+
+  if (!username || !password || !role) {
+    return res
+      .status(400)
+      .json({ error: "Username, password, and role are required." });
+  }
+
+  let tableName;
+  switch (role.toLowerCase()) {
+    case "admin":
+      tableName = "admins";
+      break;
+    case "teacher":
+      tableName = "teachers";
+      break;
+    case "student":
+      tableName = "students";
+      break;
+    default:
+      return res.status(400).json({ error: "Invalid role selected." });
+  }
 
   try {
-    let user = null;
-    let role = null;
+    const queryText = `SELECT * FROM ${tableName} WHERE username = $1 AND password = $2`;
+    const { rows } = await pool.query(queryText, [username, password]);
 
-    // Check in the admins table
-    const adminResult = await pool.query(
-      "SELECT * FROM admins WHERE username = $1 AND password = $2",
-      [username, password]
-    );
-    if (adminResult.rowCount > 0) {
-      user = adminResult.rows[0];
-      role = "admin";
-    }
-
-    // Check in the teachers table
-    if (!user) {
-      const teacherResult = await pool.query(
-        "SELECT * FROM teachers WHERE username = $1 AND password = $2",
-        [username, password]
-      );
-      if (teacherResult.rowCount > 0) {
-        user = teacherResult.rows[0];
-        role = "teacher";
-      }
-    }
-
-    // Check in the students table
-    if (!user) {
-      const studentResult = await pool.query(
-        "SELECT * FROM students WHERE username = $1 AND password = $2",
-        [username, password]
-      );
-      if (studentResult.rowCount > 0) {
-        user = studentResult.rows[0];
-        role = "student";
-      }
-    }
-
-    // If no user is found
-    if (!user) {
+    if (rows.length === 0) {
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
-    // Respond with user details
+    const user = rows[0];
+
     res.json({
       id: user.id,
       name: user.name,
-      role: role,
+      role,
     });
   } catch (error) {
     console.error("Login error:", error.message);
