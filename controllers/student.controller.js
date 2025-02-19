@@ -6,6 +6,11 @@ import {
   addStudent,
   getCredentials,
 } from "../models/student.model.js";
+
+// student model imports
+
+import { getStudentDashboardData } from "../models/student.model.js";
+
 // Create a new student (Backend generates username & password)
 const createStudent = async (req, res) => {
   try {
@@ -166,6 +171,23 @@ const getStudentCredentials = async (req, res) => {
   } catch (err) {
     console.error("Error fetching student credentials: ", err);
     res.status(500).json({ error: "Failed to fetch student credentials" });
+  }
+};
+
+// student dashbaord
+
+export const getStudentDashboard = async (req, res) => {
+  try {
+    const studentId = req.user?.id || req.query.studentId;
+    if (!studentId) {
+      return res.status(400).json({ error: "Missing student ID" });
+    }
+
+    const dashboardData = await getStudentDashboardData(studentId);
+    res.json({ student: dashboardData });
+  } catch (error) {
+    console.error("Error fetching student dashboard:", error);
+    res.status(500).json({ error: "Failed to load dashboard" });
   }
 };
 

@@ -34,11 +34,7 @@ app.use("/admin/subjects", subjectRoutes);
 app.use("/admin/timetable", timetableRoutes);
 
 //routes for student
-app.use("/student/profile", studentRoutes);
-app.use("/student/timetable", timetableRoutes);
-app.use("/student/courses", courseRoutes);
-app.use("/student/subjects", subjectRoutes);
-
+app.use("/students", studentRoutes);
 
 app.listen(port, () => {
   console.log("Server started at localhost://" + port);
