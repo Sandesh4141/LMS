@@ -5,15 +5,21 @@ import { configDotenv } from "dotenv";
 import cors from "cors";
 configDotenv();
 // routes
-import studentRoutes from "./routes/student.routes.js";
-import teacherRoutes from "./routes/teacher.routes.js";
+
+//global route
 import loginRoutes from "./routes/login.routes.js";
 
-import departmentRoutes from "./routes/department.routes.js";
-import overviewRoutes from "./routes/overview.routes.js";
-import courseRoutes from "./routes/course.routes.js";
-import subjectRoutes from "./routes/subject.routes.js";
-import timetableRoutes from "./routes/timetable.routes.js";
+//admin routes
+import adminStudentRoutes from "./routes/admin/student.routes.js";
+import adminTeacherRoutes from "./routes/admin/teacher.routes.js";
+import adminDepartmentRoutes from "./routes/admin/department.routes.js";
+import adminOverviewRoutes from "./routes/admin/overview.routes.js";
+import adminCourseRoutes from "./routes/admin/course.routes.js";
+import adminSubjectRoutes from "./routes/admin/subject.routes.js";
+import adminTimetableRoutes from "./routes/admin/timetable.routes.js";
+
+//student routes
+import studentRoutes from "./routes/student/student.routes.js";
 
 /*
  *server entry file (server.js)
@@ -25,17 +31,17 @@ app.use(cors());
 app.use(express.json());
 // routes for admin
 app.use("/login", loginRoutes);
-app.use("/admin/students", studentRoutes);
-app.use("/admin/teachers", teacherRoutes);
-app.use("/admin/overview", overviewRoutes);
-app.use("/admin/departments", departmentRoutes);
-app.use("/admin/courses", courseRoutes);
-app.use("/admin/subjects", subjectRoutes);
-app.use("/admin/timetable", timetableRoutes);
+app.use("/admin/students", adminStudentRoutes);
+app.use("/admin/teachers", adminTeacherRoutes);
+app.use("/admin/overview", adminOverviewRoutes);
+app.use("/admin/departments", adminDepartmentRoutes);
+app.use("/admin/courses", adminCourseRoutes);
+app.use("/admin/subjects", adminSubjectRoutes);
+app.use("/admin/timetable", adminTimetableRoutes);
 
 //routes for student
-app.use("/students", studentRoutes);
+app.use("/student", studentRoutes);
 
 app.listen(port, () => {
-  console.log("Server started at localhost://" + port);
+  console.log("🚀 Server started at localhost://" + port);
 });

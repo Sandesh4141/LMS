@@ -195,41 +195,32 @@ const getCredentials = async (id) => {
   return result.rows[0]; // Return username and password (plain text)
 };
 
-// get student dashboard data
 const getStudentDashboardData = async (studentId) => {
   const query = `
     SELECT 
-        s.id AS student_id,
-        s.name AS student_name,
-        s.email AS student_email,
-        s.year_of_study,
-        c.id AS course_id,
-        c.course_name,
-        c.credits,
-        sub.id AS subject_id,
-        sub.subject_name,
-        t.id AS teacher_id,
-        t.name AS teacher_name,
-        tt.day_of_week,
-        tt.start_time,
-        tt.end_time,
-        tt.room_number
+      s.name,
+      s.email,
+      s.phone,
+      s.dob,
+      s.gender,
+      s.department,
+      s.enrollment_year,
+      s.year_of_study,
+      s.address,
+      COUNT(c.id) AS totalCourses,
+      JSON_AGG(DISTINCT c.course_name) AS enrolledCourses,
+      JSON_AGG(DISTINCT sub.subject_name) AS subjects,
+      JSON_AGG(DISTINCT t.day_of_week || ' ' || t.start_time || '-' || t.end_time) AS timetable
     FROM students s
-    LEFT JOIN student_courses sc ON s.id = sc.student_id
-    LEFT JOIN courses c ON sc.course_id = c.id
-    LEFT JOIN subjects sub ON c.id = sub.course_id
-    LEFT JOIN teachers t ON sub.teacher_id = t.id
-    LEFT JOIN timetables tt ON sub.id = tt.subject_id
-    WHERE s.id = $1;
+    LEFT JOIN courses c ON s.course_id = c.id
+    LEFT JOIN subjects sub ON sub.course_id = c.id
+    LEFT JOIN timetables t ON t.course_id = c.id
+    WHERE s.id = $1
+    GROUP BY s.id, s.name, s.email, s.phone, s.dob, s.gender, s.department, s.enrollment_year, s.year_of_study, s.address;
   `;
 
-  try {
-    const result = await pool.query(query, [studentId]);
-    return result.rows;
-  } catch (error) {
-    console.error("Error fetching student dashboard data:", error);
-    throw error;
-  }
+  const result = await pool.query(query, [studentId]);
+  return result.rows[0];
 };
 
 export {

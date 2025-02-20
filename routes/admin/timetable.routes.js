@@ -1,5 +1,5 @@
 import express from "express";
-import * as timetableController from "../controllers/timetable.controller.js"; // Adjust path to your controller file
+import * as timetableController from "../../controllers/timetable.controller.js"; // Adjust path to your controller file
 const router = express.Router();
 
 // Create a new timetable entry

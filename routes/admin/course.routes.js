@@ -9,7 +9,7 @@ import {
   fetchSubjectsUnderCourse,
   fetchStudentsByCourse,
   fetchInstructorsByCourse,
-} from "../controllers/course.controller.js";
+} from "../../controllers/course.controller.js";
 
 const router = express.Router();
 

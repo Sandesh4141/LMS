@@ -174,11 +174,11 @@ const getStudentCredentials = async (req, res) => {
   }
 };
 
-// student dashbaord
-
-export const getStudentDashboard = async (req, res) => {
+const getStudentDashboard = async (req, res) => {
   try {
-    const studentId = req.user?.id || req.query.studentId;
+    // Extract studentId from params or fallback to query/auth
+    const studentId = req.params.id || req.user?.id || req.query.id;
+
     if (!studentId) {
       return res.status(400).json({ error: "Missing student ID" });
     }
@@ -198,4 +198,5 @@ export {
   deleteStudentWithSpecificID,
   updateStudentWithSpecificID,
   getStudentCredentials,
+  getStudentDashboard,
 };

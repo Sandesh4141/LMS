@@ -8,7 +8,7 @@ import {
   fetchCourses, // Fetch courses for a department
   fetchSubjectsByDepartment, // Fetch subjects for a department
   fetchDepartmentDetails, // Fetch a department with its courses and subjects
-} from "../controllers/department.controller.js";
+} from "../../controllers/department.controller.js";
 
 const router = express.Router();
 

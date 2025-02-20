@@ -9,14 +9,14 @@ import {
   updateStudentWithSpecificID,
   createStudent,
   getStudentCredentials,
-} from "../controllers/student.controller.js";
+} from "../../controllers/student.controller.js";
 
 // student dashboard routes
-import { getStudentDashboard } from "../controllers/student.controller.js";
+
 router.get("/", getStudents);
 router.post("/", createStudent);
 
-router.get("/:id/dashboard", getStudentDashboard);
+
 router.get("/:id", getSpecificStudent);
 router.delete("/:id", deleteStudentWithSpecificID);
 router.put("/:id", updateStudentWithSpecificID);
