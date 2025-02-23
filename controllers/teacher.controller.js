@@ -10,6 +10,10 @@ import {
   updateTeacherProfile,
   updateProfilePicture,
   changeTeacherPassword,
+  getTeacherAssignedCourse,
+  getTeacherSubjects,
+  verifyTeacherSubject,
+  uploadSubjectMaterial,
 } from "../models/teacher.model.js";
 // ======================== admin - teacher Controllers  ========================
 const createTeacher = async (req, res) => {
@@ -250,6 +254,78 @@ const changePassword = async (req, res) => {
   }
 };
 
+// =================== 📌 TEACHER COURSE & SUBJECT CONTROLLERS ===================
+
+/**
+ * Get Assigned Course
+ */
+const getTeacherCourse = async (req, res) => {
+  try {
+    const teacherId = req.user?.id;
+    const course = await getTeacherAssignedCourse(teacherId);
+
+    if (!course) {
+      return res.status(404).json({ error: "No assigned course found" });
+    }
+
+    res.status(200).json({ course });
+  } catch (error) {
+    console.error("❌ Error fetching course:", error);
+    res.status(500).json({ error: "Failed to fetch course" });
+  }
+};
+
+/**
+ * Get Assigned Subjects
+ */
+const getTeacherSubjectsList = async (req, res) => {
+  try {
+    const teacherId = req.user?.id;
+    const subjects = await getTeacherSubjects(teacherId);
+
+    res.status(200).json({ subjects });
+  } catch (error) {
+    console.error("❌ Error fetching subjects:", error);
+    res.status(500).json({ error: "Failed to fetch subjects" });
+  }
+};
+
+// =================== 📌 COURSE MATERIAL UPLOAD CONTROLLERS ===================
+
+/**
+ * Upload Course Content
+ */
+const uploadContent = async (req, res) => {
+  try {
+    const teacherId = req.user?.id;
+    const { subjectId } = req.params;
+    const filePath = req.file?.path;
+
+    if (!teacherId || !filePath) {
+      return res.status(400).json({ error: "Invalid request" });
+    }
+
+    const isAssigned = await verifyTeacherSubject(teacherId, subjectId);
+    if (!isAssigned) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to upload for this subject" });
+    }
+
+    const uploadedFile = await uploadSubjectMaterial(
+      teacherId,
+      subjectId,
+      filePath
+    );
+    res
+      .status(201)
+      .json({ message: "File uploaded successfully", file: uploadedFile });
+  } catch (error) {
+    console.error("❌ Error uploading file:", error);
+    res.status(500).json({ error: "Failed to upload file" });
+  }
+};
+
 export {
   createTeacher,
   getTeachers,
@@ -261,4 +337,7 @@ export {
   updateProfile,
   uploadProfilePicture,
   changePassword,
+  getTeacherCourse,
+  getTeacherSubjectsList,
+  uploadContent,
 };

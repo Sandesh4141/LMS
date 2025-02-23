@@ -144,6 +144,64 @@ const changeTeacherPassword = async (teacherId, newPassword) => {
   return rows[0];
 };
 
+// =================== 📌 TEACHER COURSE ===================
+
+/**
+ * Get the course assigned to a teacher
+ */
+const getTeacherAssignedCourse = async (teacherId) => {
+  const query = `
+    SELECT DISTINCT c.id, c.course_name, c.description, c.credits
+    FROM subjects s
+    JOIN courses c ON s.course_id = c.id
+    WHERE s.teacher_id = $1;
+  `;
+
+  const result = await pool.query(query, [teacherId]);
+  return result.rows.length > 0 ? result.rows[0] : null;
+};
+
+// =================== 📌 TEACHER SUBJECTS ===================
+
+/**
+ * Get subjects assigned to a teacher
+ */
+const getTeacherSubjects = async (teacherId) => {
+  const query = `
+    SELECT s.id, s.subject_name, s.credits, c.course_name
+    FROM subjects s
+    JOIN courses c ON s.course_id = c.id
+    WHERE s.teacher_id = $1;
+  `;
+
+  const result = await pool.query(query, [teacherId]);
+  return result.rows.length > 0 ? result.rows : [];
+};
+
+// =================== 📌 COURSE MATERIAL UPLOAD ===================
+
+/**
+ * Verify if a teacher is assigned to a subject before uploading content
+ */
+const verifyTeacherSubject = async (teacherId, subjectId) => {
+  const checkQuery = `SELECT * FROM subjects WHERE id = $1 AND teacher_id = $2;`;
+  const checkResult = await pool.query(checkQuery, [subjectId, teacherId]);
+  return checkResult.rows.length > 0;
+};
+
+/**
+ * Upload course materials for a subject
+ */
+const uploadSubjectMaterial = async (teacherId, subjectId, filePath) => {
+  const query = `
+    INSERT INTO subject_materials (subject_id, teacher_id, file_path)
+    VALUES ($1, $2, $3) RETURNING *;
+  `;
+
+  const result = await pool.query(query, [subjectId, teacherId, filePath]);
+  return result.rows[0];
+};
+
 export {
   addTeacher,
   getAllTeachers,
@@ -155,4 +213,8 @@ export {
   updateTeacherProfile,
   updateProfilePicture,
   changeTeacherPassword,
+  getTeacherAssignedCourse,
+  getTeacherSubjects,
+  verifyTeacherSubject,
+  uploadSubjectMaterial,
 };

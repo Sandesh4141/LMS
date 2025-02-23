@@ -6,6 +6,9 @@ import {
   getTeacherDashboard,
   updateProfile,
   uploadProfilePicture,
+  getTeacherCourse,
+  getTeacherSubjectsList,
+  uploadContent,
 } from "../../controllers/teacher.controller.js";
 import { upload } from "../../middlewares/uploadProfilePic.middleware.js";
 const router = Router();
@@ -20,5 +23,14 @@ router.post(
   uploadProfilePicture
 );
 router.put("/profile/change-password", changePassword);
+
+router.get("/course", getTeacherCourse); // Get Assigned Course
+router.get("/subjects", getTeacherSubjectsList); // Get Assigned Subjects
+
+router.post(
+  "/subjects/:subjectId/upload",
+  upload.single("file"),
+  uploadContent
+);
 
 export default router;
