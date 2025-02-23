@@ -4,8 +4,9 @@ import {
   getTeacherByID,
   updateTeacherByID,
   deleteTeacherByID,
+  getTeacherDashboardData,
 } from "../models/teacher.model.js";
-
+// ======================== admin - teacher Controllers  ========================
 const createTeacher = async (req, res) => {
   console.log("Create Teacher Hit");
   try {
@@ -109,10 +110,32 @@ const deleteTeacher = async (req, res) => {
   }
 };
 
+// ======================== Teacher - teacher controllers ========================
+
+// teacher.controller.js
+
+const getTeacherDashboard = async (req, res) => {
+  try {
+    // Retrieve the teacher's ID from the authenticated token (attached by JWT middleware)
+    const teacherId = req.user?.id;
+
+    if (!teacherId) {
+      return res.status(400).json({ error: "Missing teacher ID" });
+    }
+
+    const dashboardData = await getTeacherDashboardData(teacherId);
+    res.json({ teacher: dashboardData });
+  } catch (error) {
+    console.error("Error fetching teacher dashboard:", error);
+    res.status(500).json({ error: "Failed to load dashboard" });
+  }
+};
+
 export {
   createTeacher,
   getTeachers,
   getSpecificTeacher,
   updateTeacher,
   deleteTeacher,
+  getTeacherDashboard,
 };

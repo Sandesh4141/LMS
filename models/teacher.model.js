@@ -1,5 +1,6 @@
 import pool from "../db/db.js";
 
+// ====================== Model for Admins ======================
 const addTeacher = async (teacher) => {
   const {
     username,
@@ -54,10 +55,38 @@ const deleteTeacherByID = async (id) => {
   return result.rows[0];
 };
 
+// ====================== Model for teacher ======================
+
+const getTeacherDashboardData = async (teacherId) => {
+  const query = `SELECT
+  t.id,
+  t.name,
+  t.email,
+  t.department,
+  CASE WHEN t.course_id IS NOT NULL THEN 1 ELSE 0 END AS totalCourses,
+  JSON_AGG(DISTINCT c.course_name) AS coursesTaught,
+  JSON_AGG(DISTINCT sub.subject_name) AS subjects,
+  JSON_AGG(
+    DISTINCT CONCAT(tt.day_of_week, ' ', tt.start_time, '-', tt.end_time)
+  ) AS timetable
+FROM teachers t
+LEFT JOIN courses c ON t.course_id = c.id
+LEFT JOIN subjects sub ON sub.course_id = c.id
+LEFT JOIN timetables tt ON tt.course_id = c.id
+WHERE t.id = $1
+GROUP BY t.id, t.name, t.email, t.department, t.course_id, c.course_name;
+`;
+
+  console.log("Get Teacher Dashboard Data Hit");
+  const { rows } = await pool.query(query, [teacherId]);
+  return rows[0];
+};
+
 export {
   addTeacher,
   getAllTeachers,
   getTeacherByID,
   updateTeacherByID,
   deleteTeacherByID,
+  getTeacherDashboardData,
 };
