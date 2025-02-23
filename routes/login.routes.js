@@ -1,5 +1,6 @@
 import express from "express";
 import pool from "../db/db.js";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -37,11 +38,18 @@ router.post("/", async (req, res) => {
 
     const user = rows[0];
 
-    res.json({
+    // Create a payload for the JWT token
+    const payload = {
       id: user.id,
       name: user.name,
-      role,
+      role: role.toLowerCase(),
+    };
+
+    // Sign the token for all roles
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
     });
+    return res.json({ token });
   } catch (error) {
     console.error("Login error:", error.message);
     res.status(500).json({ error: "Internal server error" });

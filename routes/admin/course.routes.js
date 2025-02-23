@@ -41,8 +41,6 @@ router.put("/:id", updateExistingCourse);
 router.delete("/:id", deleteCourseById);
 
 
-//student routes for course
 
-//fetch course 
 
 export default router;
