@@ -82,6 +82,68 @@ GROUP BY t.id, t.name, t.email, t.department, t.course_id, c.course_name;
   return rows[0];
 };
 
+const getTeacherProfile = async (teacherId) => {
+  //  teachers self profile
+  const query = `
+      SELECT id, name, email, department, phone_number, office_hours, profile_picture
+      FROM teachers
+      WHERE id = $1;
+  `;
+
+  console.log("Get Teacher Profile Hit");
+  const { rows } = await pool.query(query, [teacherId]);
+  return rows[0];
+};
+
+const updateTeacherProfile = async (teacherId, name, phone, officeHours) => {
+  const query = `
+      UPDATE teachers 
+      SET name = $1, phone_number = $2, office_hours = $3 
+      WHERE id = $4 
+      RETURNING *;
+  `;
+
+  console.log("Update Teacher Profile Hit");
+
+  const { rows } = await pool.query(query, [
+    name,
+    phone,
+    officeHours,
+    teacherId,
+  ]);
+  return rows[0];
+};
+
+const updateProfilePicture = async (teacherId, filePath) => {
+  //  model function for updating profile picture for teacher prfile
+  // using this they can update thier own profile picture
+
+  const query = `
+      UPDATE teachers 
+      SET profile_picture = $1 
+      WHERE id = $2 
+      RETURNING profile_picture;
+  `;
+
+  const { rows } = await pool.query(query, [filePath, teacherId]);
+  return rows[0];
+};
+
+const changeTeacherPassword = async (teacherId, newPassword) => {
+  //  model function for updating password for teacher profile
+  // using this they can update teacher can change thier own password
+
+  const query = `
+      UPDATE teachers 
+      SET password = $1 
+      WHERE id = $2
+      RETURNING id, name, email;
+  `;
+
+  const { rows } = await pool.query(query, [newPassword, teacherId]);
+  return rows[0];
+};
+
 export {
   addTeacher,
   getAllTeachers,
@@ -89,4 +151,8 @@ export {
   updateTeacherByID,
   deleteTeacherByID,
   getTeacherDashboardData,
+  getTeacherProfile,
+  updateTeacherProfile,
+  updateProfilePicture,
+  changeTeacherPassword,
 };
