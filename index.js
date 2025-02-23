@@ -12,7 +12,7 @@ import loginRoutes from "./routes/login.routes.js";
 //admin routes
 import adminRoutes from "./routes/admin/index.routes.js";
 //student routes
-import studentRoutes from "./routes/student/student.routes.js";
+import studentRoutes from "./routes/student/index.routes.js";
 
 /*
  *server entry file (server.js)
