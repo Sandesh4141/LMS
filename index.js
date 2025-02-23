@@ -10,14 +10,7 @@ configDotenv();
 import loginRoutes from "./routes/login.routes.js";
 
 //admin routes
-import adminStudentRoutes from "./routes/admin/student.routes.js";
-import adminTeacherRoutes from "./routes/admin/teacher.routes.js";
-import adminDepartmentRoutes from "./routes/admin/department.routes.js";
-import adminOverviewRoutes from "./routes/admin/overview.routes.js";
-import adminCourseRoutes from "./routes/admin/course.routes.js";
-import adminSubjectRoutes from "./routes/admin/subject.routes.js";
-import adminTimetableRoutes from "./routes/admin/timetable.routes.js";
-
+import adminRoutes from "./routes/admin/index.routes.js";
 //student routes
 import studentRoutes from "./routes/student/student.routes.js";
 
@@ -29,15 +22,12 @@ const port = 5000;
 
 app.use(cors());
 app.use(express.json());
-// routes for admin
+
+// route for login
 app.use("/login", loginRoutes);
-app.use("/admin/students", adminStudentRoutes);
-app.use("/admin/teachers", adminTeacherRoutes);
-app.use("/admin/overview", adminOverviewRoutes);
-app.use("/admin/departments", adminDepartmentRoutes);
-app.use("/admin/courses", adminCourseRoutes);
-app.use("/admin/subjects", adminSubjectRoutes);
-app.use("/admin/timetable", adminTimetableRoutes);
+
+// routes for admin
+app.use("/admin", adminRoutes);
 
 //routes for student
 app.use("/student", studentRoutes);
