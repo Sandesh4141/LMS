@@ -14,6 +14,7 @@ import adminRoutes from "./routes/admin/index.routes.js";
 //student routes
 import studentRoutes from "./routes/student/index.routes.js";
 
+import teacherRoutes from "./routes/teacher/index.routes.js";
 /*
  *server entry file (server.js)
  */
@@ -32,6 +33,8 @@ app.use("/admin", adminRoutes);
 //routes for student
 app.use("/student", studentRoutes);
 
+//route for teachers
+app.use("/teacher", teacherRoutes);
 app.listen(port, () => {
   console.log("🚀 Server started at localhost://" + port);
 });
