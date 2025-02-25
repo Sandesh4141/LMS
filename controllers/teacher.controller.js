@@ -16,6 +16,7 @@ import {
   uploadSubjectMaterial,
   getEnrolledStudentsByCourse,
   getSubjectsForTeacher,
+  getSubjectDetailsForTeacher,
 } from "../models/teacher.model.js";
 
 // ======================== admin - teacher Controllers  ========================
@@ -406,6 +407,30 @@ const getSubjectsForCourse = async (req, res) => {
   }
 };
 
+const getSubjectDetails = async (req, res) => {
+  try {
+    const teacherId = req.user.id; // Extract teacher ID from JWT
+    const { id: subjectId } = req.params; // Get subjectId from URL params
+
+    if (!subjectId) {
+      return res.status(400).json({ error: "Subject ID is required" });
+    }
+
+    const subject = await getSubjectDetailsForTeacher(teacherId, subjectId);
+
+    if (!subject) {
+      return res
+        .status(404)
+        .json({ error: "Subject not found or not assigned to you" });
+    }
+
+    res.json({ subject });
+  } catch (error) {
+    console.error("Error fetching subject details:", error);
+    res.status(500).json({ error: "Failed to fetch subject details" });
+  }
+};
+
 export {
   createTeacher,
   getTeachers,
@@ -422,4 +447,6 @@ export {
   uploadContent,
   getEnrolledStudents,
   getSubjectsForCourse,
+  getSubjectDetailsForTeacher,
+  getSubjectDetails,
 };

@@ -230,6 +230,24 @@ const getSubjectsForTeacher = async (teacherId, courseId) => {
   return result.rows.length > 0 ? result.rows : [];
 };
 
+const getSubjectDetailsForTeacher = async (teacherId, subjectId) => {
+  const query = `
+    SELECT 
+      s.id, 
+      s.subject_name, 
+      s.description, 
+      s.credits, 
+      c.course_name, 
+      c.department_id
+    FROM subjects s
+    JOIN courses c ON s.course_id = c.id
+    WHERE s.teacher_id = $1 AND s.id = $2;
+  `;
+
+  const result = await pool.query(query, [teacherId, subjectId]);
+  return result.rows.length > 0 ? result.rows[0] : null;
+};
+
 export {
   addTeacher,
   getAllTeachers,
@@ -247,5 +265,5 @@ export {
   uploadSubjectMaterial,
   getEnrolledStudentsByCourse,
   getSubjectsForTeacher,
-  
+  getSubjectDetailsForTeacher,
 };
