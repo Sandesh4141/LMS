@@ -14,7 +14,9 @@ import {
   getTeacherSubjects,
   verifyTeacherSubject,
   uploadSubjectMaterial,
+  getEnrolledStudentsByCourse,
 } from "../models/teacher.model.js";
+
 // ======================== admin - teacher Controllers  ========================
 const createTeacher = async (req, res) => {
   console.log("Create Teacher Hit");
@@ -326,6 +328,59 @@ const uploadContent = async (req, res) => {
   }
 };
 
+/**
+ * Get Enrolled Students for a Course
+ */ const getEnrolledStudents = async (req, res) => {
+  console.log("Get Enrolled Students Hit");
+
+  try {
+    const teacherId = req.user?.id;
+    const { courseId } = req.params;
+
+    console.log("Teacher ID:", teacherId);
+    console.log("Requested Course ID:", courseId);
+
+    if (!teacherId || !courseId) {
+      return res.status(400).json({ error: "Missing teacher ID or course ID" });
+    }
+
+    // Fetch all courses assigned to the teacher
+    const assignedCourses = await getTeacherAssignedCourse(teacherId);
+
+    console.log("Assigned Courses:", assignedCourses);
+
+    // Ensure assignedCourses is an array before using .some()
+    if (!Array.isArray(assignedCourses)) {
+      return res.status(500).json({
+        error: "Internal Server Error: Assigned courses data is invalid",
+      });
+    }
+
+    // Check if requested course is in the assigned courses
+    const isAuthorized = assignedCourses.some(
+      (course) => course.course_id === parseInt(courseId)
+    );
+
+    if (!isAuthorized) {
+      return res.status(403).json({ error: "Unauthorized access to course" });
+    }
+
+    // Fetch enrolled students
+    const students = await getEnrolledStudentsByCourse(courseId);
+
+    if (students.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No students enrolled in this course" });
+    }
+
+    res.status(200).json({ students });
+  } catch (error) {
+    console.error("Error fetching enrolled students:", error);
+    res.status(500).json({ error: "Failed to fetch enrolled students" });
+  }
+};
+
 export {
   createTeacher,
   getTeachers,
@@ -340,4 +395,5 @@ export {
   getTeacherCourse,
   getTeacherSubjectsList,
   uploadContent,
+  getEnrolledStudents,
 };

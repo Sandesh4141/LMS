@@ -9,6 +9,7 @@ import {
   getTeacherCourse,
   getTeacherSubjectsList,
   uploadContent,
+  getEnrolledStudents,
 } from "../../controllers/teacher.controller.js";
 import { upload } from "../../middlewares/uploadProfilePic.middleware.js";
 const router = Router();
@@ -32,5 +33,8 @@ router.post(
   upload.single("file"),
   uploadContent
 );
+
+
+router.get("/course/:courseId/enrolled-students", getEnrolledStudents);
 
 export default router;

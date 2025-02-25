@@ -151,14 +151,19 @@ const changeTeacherPassword = async (teacherId, newPassword) => {
  */
 const getTeacherAssignedCourse = async (teacherId) => {
   const query = `
-    SELECT DISTINCT c.id, c.course_name, c.description, c.credits
+    SELECT DISTINCT c.id AS course_id, c.course_name
     FROM subjects s
     JOIN courses c ON s.course_id = c.id
     WHERE s.teacher_id = $1;
   `;
 
+  console.log("Fetching assigned courses for Teacher ID:", teacherId);
+
   const result = await pool.query(query, [teacherId]);
-  return result.rows.length > 0 ? result.rows[0] : null;
+
+  console.log("Assigned Courses Query Result:", result.rows); // 🔥 Debug Log
+
+  return result.rows; // Ensure we return an array, not a single object
 };
 
 // =================== 📌 TEACHER SUBJECTS ===================
@@ -202,6 +207,17 @@ const uploadSubjectMaterial = async (teacherId, subjectId, filePath) => {
   return result.rows[0];
 };
 
+const getEnrolledStudentsByCourse = async (courseId) => {
+  const query = `
+  SELECT s.id, s.name, s.email, s.phone, s.enrollment_year
+  FROM students s
+  WHERE s.course_id = $1;
+`;
+
+  const result = await pool.query(query, [courseId]);
+  return result.rows;
+};
+
 export {
   addTeacher,
   getAllTeachers,
@@ -217,4 +233,5 @@ export {
   getTeacherSubjects,
   verifyTeacherSubject,
   uploadSubjectMaterial,
+  getEnrolledStudentsByCourse,
 };
