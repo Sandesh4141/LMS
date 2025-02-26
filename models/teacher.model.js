@@ -248,6 +248,36 @@ const getSubjectDetailsForTeacher = async (teacherId, subjectId) => {
   return result.rows.length > 0 ? result.rows[0] : null;
 };
 
+/**
+ *  Create an assignment with file
+ */
+const createAssignmentWithMaterial = async (
+  teacherId,
+  subjectId,
+  title,
+  description,
+  dueDate,
+  filePath
+) => {
+  const query = `
+    INSERT INTO assignments (subject_id, teacher_id, title, description, due_date, file_path)
+    VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+  `;
+
+  const values = [subjectId, teacherId, title, description, dueDate, filePath];
+  const result = await pool.query(query, values);
+  return result.rows[0];
+};
+
+/**
+ * ✅ Fetch assignments for a subject with materials
+ */
+const getAssignmentsBySubject = async (subjectId) => {
+  const query = `SELECT * FROM assignments WHERE subject_id = $1 ORDER BY due_date ASC;`;
+  const result = await pool.query(query, [subjectId]);
+  return result.rows;
+};
+
 export {
   addTeacher,
   getAllTeachers,
@@ -266,4 +296,6 @@ export {
   getEnrolledStudentsByCourse,
   getSubjectsForTeacher,
   getSubjectDetailsForTeacher,
+  createAssignmentWithMaterial,
+  getAssignmentsBySubject,
 };

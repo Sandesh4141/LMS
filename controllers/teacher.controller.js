@@ -431,6 +431,61 @@ const getSubjectDetails = async (req, res) => {
   }
 };
 
+import {
+  createAssignmentWithMaterial,
+  getAssignmentsBySubject,
+} from "../models/teacher.model.js";
+
+/**
+ * Controller: Create Assignment with Material
+ */
+const addAssignment = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+    const { subjectId } = req.params; // Extract subject ID from URL
+    const { title, description, dueDate } = req.body;
+    const filePath = req.file ? req.file.path : null; // Get file path if uploaded
+
+    if (!title || !dueDate) {
+      return res.status(400).json({ error: "Title and due date are required" });
+    }
+
+    // Insert assignment into the database
+    const assignment = await createAssignmentWithMaterial(
+      teacherId,
+      subjectId,
+      title,
+      description,
+      dueDate,
+      filePath
+    );
+
+    res
+      .status(201)
+      .json({ message: "Assignment created successfully", assignment });
+  } catch (error) {
+    console.error("Error creating assignment:", error);
+    res.status(500).json({ error: "Failed to create assignment" });
+  }
+};
+
+/**
+ * Controller: Get Assignments for a Subject
+ */
+const getAssignments = async (req, res) => {
+  try {
+    const { subjectId } = req.params;
+    const assignments = await getAssignmentsBySubject(subjectId);
+
+    res.json({ assignments });
+  } catch (error) {
+    console.error("Error fetching assignments:", error);
+    res.status(500).json({ error: "Failed to fetch assignments" });
+  }
+};
+
+export {};
+
 export {
   createTeacher,
   getTeachers,
@@ -449,4 +504,6 @@ export {
   getSubjectsForCourse,
   getSubjectDetailsForTeacher,
   getSubjectDetails,
+  addAssignment,
+  getAssignments,
 };

@@ -12,8 +12,11 @@ import {
   getEnrolledStudents,
   getSubjectsForCourse,
   getSubjectDetails,
+  getAssignments,
+  addAssignment,
 } from "../../controllers/teacher.controller.js";
 import { upload } from "../../middlewares/uploadProfilePic.middleware.js";
+import { uploadAssignmentMaterial } from "../../middlewares/uploadAssignmentMaterial.middleware.js";
 const router = Router();
 
 // When a GET request is made to /teacher/dashboard, the dashboard data is returned.
@@ -40,5 +43,12 @@ router.get("/course/:courseId/enrolled-students", getEnrolledStudents);
 router.get("/course/:id/subjects", getSubjectsForCourse);
 router.get("/subjects/:id", getSubjectDetails);
 
+router.post(
+  "/subjects/:subjectId/assignments",
+  uploadAssignmentMaterial, // single("assignmentFile") -  for now update later for multiple files
 
+  addAssignment
+);
+
+router.get("/subjects/:subjectId/assignments", getAssignments);
 export default router;
