@@ -177,23 +177,26 @@ const getStudentCredentials = async (req, res) => {
 // ======================== Student Dashboard ========================
 
 const getStudentDashboard = async (req, res) => {
+  console.log("Fetching student dashboard data...");
   try {
-    
-    const studentId = req.user?.id;
+    const studentId = req.user?.id; // Ensure the student is authenticated
 
     if (!studentId) {
       return res.status(400).json({ error: "Missing student ID" });
     }
 
     const dashboardData = await getStudentDashboardData(studentId);
+
+    if (!dashboardData) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
     res.json({ student: dashboardData });
   } catch (error) {
     console.error("Error fetching student dashboard:", error);
     res.status(500).json({ error: "Failed to load dashboard" });
   }
 };
-
-
 
 export {
   createStudent,

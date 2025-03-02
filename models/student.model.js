@@ -198,29 +198,90 @@ const getCredentials = async (id) => {
 const getStudentDashboardData = async (studentId) => {
   const query = `
     SELECT 
-      s.name,
-      s.email,
-      s.phone,
-      s.dob,
-      s.gender,
-      s.department,
-      s.enrollment_year,
-      s.year_of_study,
-      s.address,
-      COUNT(c.id) AS totalCourses,
-      JSON_AGG(DISTINCT c.course_name) AS enrolledCourses,
-      JSON_AGG(DISTINCT sub.subject_name) AS subjects,
-      JSON_AGG(DISTINCT t.day_of_week || ' ' || t.start_time || '-' || t.end_time) AS timetable
+        s.id AS student_id, 
+        s.name, 
+        s.email, 
+        s.phone, 
+        s.dob, 
+        s.gender, 
+        d.program_name AS department,  
+        s.enrollment_year, 
+        s.year_of_study, 
+        s.address,
+        c.id AS course_id, 
+        c.course_name,
+        COUNT(DISTINCT sub.id)::INTEGER AS totalSubjects,  
+        ARRAY_AGG(DISTINCT sub.subject_name) FILTER (WHERE sub.subject_name IS NOT NULL) AS enrolledSubjects,
+        ARRAY_REMOVE(
+            ARRAY_AGG(DISTINCT CONCAT(t.day_of_week, ' ', t.start_time, '-', t.end_time)), NULL
+        ) AS timetable 
     FROM students s
     LEFT JOIN courses c ON s.course_id = c.id
     LEFT JOIN subjects sub ON sub.course_id = c.id
-    LEFT JOIN timetables t ON t.course_id = c.id
+    LEFT JOIN timetables t ON t.subject_id = sub.id  
+    LEFT JOIN department d ON CAST(s.department AS INTEGER) = d.id
     WHERE s.id = $1
-    GROUP BY s.id, s.name, s.email, s.phone, s.dob, s.gender, s.department, s.enrollment_year, s.year_of_study, s.address;
+    GROUP BY s.id, c.id, d.program_name;
   `;
 
-  const result = await pool.query(query, [studentId]);
-  return result.rows[0];
+  const studentResult = await pool.query(query, [studentId]);
+  const studentData = studentResult.rows[0];
+
+  if (!studentData) return null;
+
+  // Fetch Active Assignments (Pending Assignments for Subjects)
+  const activeAssignmentsQuery = `
+    SELECT 
+        a.id AS assignment_id, 
+        a.title, 
+        a.description, 
+        a.due_date, 
+        sub.subject_name,
+        COALESCE(ss.submission_status, 'pending') AS submission_status
+    FROM assignments a
+    JOIN subjects sub ON a.subject_id = sub.id  
+    LEFT JOIN student_submissions ss 
+        ON ss.assignment_id = a.id 
+        AND ss.student_id = $1  
+    WHERE sub.course_id = (SELECT course_id FROM students WHERE id = $1)
+    AND a.due_date >= NOW()  
+    ORDER BY a.due_date ASC
+    LIMIT 5;
+  `;
+
+  const activeAssignmentsResult = await pool.query(activeAssignmentsQuery, [
+    studentId,
+  ]);
+
+  // Fetch latest announcements
+  const announcementsQuery = `
+    SELECT ann.id, ann.title, ann.message, ann.created_at, c.course_name
+    FROM announcements ann
+    JOIN courses c ON ann.course_id = c.id
+    WHERE ann.course_id = (SELECT course_id FROM students WHERE id = $1)
+    ORDER BY ann.created_at DESC
+    LIMIT 5;
+  `;
+
+  const announcementsResult = await pool.query(announcementsQuery, [studentId]);
+
+  // Fetch latest notifications
+  const notificationsQuery = `
+    SELECT id, message, type, created_at
+    FROM notifications
+    WHERE user_id = $1
+    ORDER BY created_at DESC
+    LIMIT 5;
+  `;
+
+  const notificationsResult = await pool.query(notificationsQuery, [studentId]);
+
+  return {
+    ...studentData,
+    activeAssignments: activeAssignmentsResult.rows, // ✅ Active assignments shown first
+    recentAnnouncements: announcementsResult.rows,
+    notifications: notificationsResult.rows,
+  };
 };
 
 export {

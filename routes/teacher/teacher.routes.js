@@ -50,5 +50,7 @@ router.post(
   addAssignment
 );
 
+// see assignment created
 router.get("/subjects/:subjectId/assignments", getAssignments);
+
 export default router;
