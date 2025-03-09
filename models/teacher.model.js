@@ -63,18 +63,17 @@ const getTeacherDashboardData = async (teacherId) => {
   t.name,
   t.email,
   t.department,
-  CASE WHEN t.course_id IS NOT NULL THEN 1 ELSE 0 END AS totalCourses,
+  COUNT(DISTINCT c.id) AS totalCourses,  -- Count unique courses
   JSON_AGG(DISTINCT c.course_name) AS coursesTaught,
   JSON_AGG(DISTINCT sub.subject_name) AS subjects,
-  JSON_AGG(
-    DISTINCT CONCAT(tt.day_of_week, ' ', tt.start_time, '-', tt.end_time)
-  ) AS timetable
+  JSON_AGG(DISTINCT CONCAT(tt.day_of_week, ' ', tt.start_time, '-', tt.end_time)) AS timetable
 FROM teachers t
-LEFT JOIN courses c ON t.course_id = c.id
-LEFT JOIN subjects sub ON sub.course_id = c.id
-LEFT JOIN timetables tt ON tt.course_id = c.id
+LEFT JOIN subjects sub ON t.id = sub.teacher_id
+LEFT JOIN courses c ON sub.course_id = c.id
+LEFT JOIN timetables tt ON sub.course_id = tt.course_id
 WHERE t.id = $1
-GROUP BY t.id, t.name, t.email, t.department, t.course_id, c.course_name;
+GROUP BY t.id, t.name, t.email, t.department;
+
 `;
 
   console.log("Get Teacher Dashboard Data Hit");
