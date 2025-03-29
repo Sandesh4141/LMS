@@ -52,14 +52,11 @@ const deleteDepartment = async (id) => {
 };
 
 /* Fetch courses by department (program_id) */
-const getCoursesByDepartment = async (programId) => {
+const getCoursesByDepartment = async (departmentId) => {
   console.log("getCoursesByDepartment hit:-> department.model");
   const result = await pool.query(
-    `SELECT c.* 
-     FROM courses c 
-     JOIN department_courses dc ON c.id = dc.course_id 
-     WHERE dc.program_id = $1`,
-    [programId]
+    `SELECT * FROM courses WHERE department_id = $1`,
+    [departmentId]
   );
   return result.rows;
 };

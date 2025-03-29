@@ -5,6 +5,8 @@ import {
   updateStudentByID,
   addStudent,
   getCredentials,
+  getStudentCourseName,
+  getAllStudents
 } from "../models/student.model.js";
 
 // student model imports
@@ -49,21 +51,8 @@ const createStudent = async (req, res) => {
 // Fetch all students with pagination and filtering
 const getStudents = async (req, res) => {
   try {
-    const { department, year_of_study, page = 1, limit = 10 } = req.query;
-
-    const offset = (page - 1) * limit; // Calculate pagination offset
-    const students = await getAllStudentsFiltered({
-      department,
-      year_of_study,
-      limit,
-      offset,
-    });
-
-    res.json({
-      students,
-      currentPage: parseInt(page, 10),
-      totalPages: Math.ceil(students.totalCount / limit),
-    });
+    const students = await getAllStudents(); // 🧠 get course_name joined here
+    res.json({ students });
   } catch (err) {
     console.error("Error fetching students: ", err);
     res.status(500).json({ error: "Failed to fetch students" });

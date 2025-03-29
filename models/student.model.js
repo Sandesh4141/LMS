@@ -10,44 +10,45 @@ const addStudent = async (student) => {
     enrollment_year,
     year_of_study,
     address,
+    course_id, 
   } = student;
 
-  // Generate username from email
   const username = email.split("@")[0];
-
-  // Generate default password: FirstName@123
   const password = `${name.split(" ")[0]}@123`;
 
-  // Insert student into the database
   const result = await pool.query(
     `INSERT INTO students 
-      (username, password, name, email, phone, dob, gender, department, enrollment_year, year_of_study, address, created_at) 
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW()) 
+      (username, password, name, email, phone, dob, gender, department, course_id, enrollment_year, year_of_study, address, created_at) 
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW()) 
      RETURNING id, name, email, username, password`,
     [
       username,
-      password, // Plain text password (Not encrypted)
+      password,
       name,
       email,
       phone,
       dob,
       gender,
       department,
+      course_id, // ✅ Pass course_id into the query
       enrollment_year,
       year_of_study,
       address,
     ]
   );
 
-  return result.rows[0]; // Return newly added student
+  return result.rows[0];
 };
 
 const getAllStudents = async () => {
-  /*
-   *student.model
-   * Returns all students
-   */
-  const result = await pool.query("SELECT * FROM students");
+  const result = await pool.query(`
+    SELECT 
+      s.*, 
+      c.course_name 
+    FROM students s
+    LEFT JOIN courses c ON s.course_id = c.id
+    ORDER BY s.created_at DESC
+  `);
   console.log("student model :-> students fetched:", result.rowCount);
   return result.rows;
 };
@@ -195,6 +196,11 @@ const getCredentials = async (id) => {
   return result.rows[0]; // Return username and password (plain text)
 };
 
+const getStudentCourseName = async (studentId) => {
+  const query = `SELECT course_name FROM courses WHERE id = (SELECT course_id FROM students WHERE id = $1)`;
+  const result = await pool.query(query, [studentId]);
+  return result.rows[0].course_name;
+};
 const getStudentDashboardData = async (studentId) => {
   const query = `
     SELECT 
@@ -295,4 +301,5 @@ export {
   getStudentCount,
   getCredentials,
   getStudentDashboardData,
+  getStudentCourseName,
 };
