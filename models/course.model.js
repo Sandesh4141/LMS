@@ -142,9 +142,9 @@ const fetchAllSubjectsUnderCourse = async (courseId) => {
 const getStudentsByCourse = async (courseId) => {
   console.log("getStudentsByCourse hit:-> course.model");
   const result = await pool.query(
-    `SELECT s.* FROM students s 
-     JOIN enrollments e ON s.id = e.student_id 
-     WHERE e.course_id = $1`,
+    `SELECT s.id, s.name, s.email, s.phone, s.enrollment_year
+     FROM students s
+     WHERE s.course_id = $1`,
     [courseId]
   );
   return result.rows;
@@ -172,6 +172,68 @@ const getCourseTimetable = async (courseId) => {
   return result.rows;
 };
 
+const updateSubjectsForCourse = async (courseId, subjectIds) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Fetch current subject IDs under this course
+    const currentRes = await client.query(
+      "SELECT id FROM subjects WHERE course_id = $1",
+      [courseId]
+    );
+    const currentSubjectIds = currentRes.rows.map((row) => row.id);
+
+    // Subjects to unlink (no longer selected)
+    const toUnlink = currentSubjectIds.filter((id) => !subjectIds.includes(id));
+
+    // Subjects to newly link
+    const toLink = subjectIds.filter((id) => !currentSubjectIds.includes(id));
+
+    // Unlink removed ones
+    for (const subjectId of toUnlink) {
+      await client.query("UPDATE subjects SET course_id = NULL WHERE id = $1", [
+        subjectId,
+      ]);
+    }
+
+    // Link new ones
+    for (const subjectId of toLink) {
+      await client.query("UPDATE subjects SET course_id = $1 WHERE id = $2", [
+        courseId,
+        subjectId,
+      ]);
+    }
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
+const updateCoursePartial = async (
+  id,
+  courseName,
+  description,
+  departmentId
+) => {
+  console.log("updateCoursePartial hit:-> course.model");
+  const result = await pool.query(
+    `UPDATE courses 
+     SET course_name = $1,
+         description = $2,
+         department_id = $3,
+         updated_at = NOW()
+     WHERE id = $4
+     RETURNING *`,
+    [courseName, description, departmentId, id]
+  );
+  return result.rows[0];
+};
+
 export {
   getAllCourses,
   getCourseById,
@@ -183,4 +245,6 @@ export {
   getStudentsByCourse,
   getInstructorsByCourse,
   getCourseTimetable,
+  updateSubjectsForCourse,
+  updateCoursePartial,
 };

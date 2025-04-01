@@ -9,6 +9,8 @@ import {
   getStudentsByCourse,
   getInstructorsByCourse,
   getCourseTimetable,
+  updateSubjectsForCourse,
+  updateCoursePartial,
 } from "../models/course.model.js";
 
 /* Fetch all courses */
@@ -113,42 +115,20 @@ const createNewCourse = async (req, res) => {
 /* Update an existing course */
 const updateExistingCourse = async (req, res) => {
   const { id } = req.params;
-  const {
-    courseName,
-    courseCode,
-    description,
-    credits,
-    departmentId,
-    totalSemesters,
-    durationYears,
-    modeOfStudy,
-    eligibilityCriteria,
-    intakeCapacity,
-    affiliatedUniversity,
-    isActive,
-  } = req.body;
+  const { course_name, description, department_id } = req.body;
+
+  if (!course_name || !department_id) {
+    return res.status(400).json({ error: "Required fields missing" });
+  }
 
   try {
-    const updatedCourse = await updateCourse(
+    const updated = await updateCoursePartial(
       id,
-      courseName,
-      courseCode,
+      course_name,
       description,
-      credits,
-      departmentId,
-      totalSemesters,
-      durationYears,
-      modeOfStudy,
-      eligibilityCriteria,
-      intakeCapacity,
-      affiliatedUniversity,
-      isActive
+      department_id
     );
-
-    if (!updatedCourse) {
-      return res.status(404).json({ error: "Course not found" });
-    }
-    res.json(updatedCourse);
+    res.status(200).json(updated);
   } catch (error) {
     console.error("Error updating course:", error);
     res.status(500).json({ error: "Failed to update course" });
@@ -206,6 +186,19 @@ const fetchInstructorsByCourse = async (req, res) => {
   }
 };
 
+const updateCourseSubjects = async (req, res) => {
+  const { courseId } = req.params;
+  const { subjectIds } = req.body;
+
+  try {
+    await updateSubjectsForCourse(courseId, subjectIds);
+    res.status(200).json({ message: "Subjects updated for course ✅" });
+  } catch (error) {
+    console.error("Error updating subjects for course:", error);
+    res.status(500).json({ error: "Failed to update subjects" });
+  }
+};
+
 export {
   fetchAllCourses,
   fetchCourseById,
@@ -216,4 +209,5 @@ export {
   fetchSubjectsUnderCourse,
   fetchStudentsByCourse,
   fetchInstructorsByCourse,
+  updateCourseSubjects,
 };

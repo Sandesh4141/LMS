@@ -10,7 +10,7 @@ const addStudent = async (student) => {
     enrollment_year,
     year_of_study,
     address,
-    course_id, 
+    course_id,
   } = student;
 
   const username = email.split("@")[0];

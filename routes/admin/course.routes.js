@@ -9,6 +9,7 @@ import {
   fetchSubjectsUnderCourse,
   fetchStudentsByCourse,
   fetchInstructorsByCourse,
+  updateCourseSubjects,
 } from "../../controllers/course.controller.js";
 
 const router = express.Router();
@@ -40,7 +41,7 @@ router.put("/:id", updateExistingCourse);
 // Delete a course
 router.delete("/:id", deleteCourseById);
 
-
-
+// Update subjects under a course
+router.put("/:courseId/subjects", updateCourseSubjects);
 
 export default router;
