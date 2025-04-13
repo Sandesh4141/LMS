@@ -11,7 +11,7 @@ import studentRoutes from "./student.routes.js";
 import subjectRoutes from "./subject.routes.js";
 import teacherRoutes from "./teacher.routes.js";
 import timetableRoutes from "./timetable.routes.js";
-
+import announcementRoutes from "./announcement.routes.js";
 const router = express.Router();
 router.use(authenticateJWT);
 router.use(authorizeRoles("admin"));
@@ -23,4 +23,5 @@ router.use("/students", studentRoutes);
 router.use("/subjects", subjectRoutes);
 router.use("/teachers", teacherRoutes);
 router.use("/timetable", timetableRoutes);
+router.use("/announcements", announcementRoutes);
 export default router;
