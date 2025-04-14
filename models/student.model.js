@@ -54,15 +54,21 @@ const getAllStudents = async () => {
 };
 
 const getStudentByID = async (id) => {
-  /*
-   * student.model
-   * Return student with specific ID
-   */
-  const result = await pool.query("SELECT * FROM students WHERE id = $1", [id]);
-  console.log("student model :-> student fetched ", result.rowCount);
-  if (result.rowCount <= 0) {
-    console.log("No Users Found");
-  }
+  const result = await pool.query(
+    `
+    SELECT 
+      s.*,
+      c.course_name,
+      d.program_name AS department_name
+    FROM students s
+    LEFT JOIN courses c ON s.course_id = c.id
+    LEFT JOIN department d ON CAST(s.department AS INTEGER) = d.id
+    WHERE s.id = $1
+    `,
+    [id]
+  );
+
+  console.log("student.model :-> student fetched ", result.rowCount);
   return result.rows[0];
 };
 
