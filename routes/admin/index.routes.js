@@ -12,6 +12,8 @@ import teacherRoutes from "./teacher.routes.js";
 import timetableRoutes from "./timetable.routes.js";
 import announcementRoutes from "./announcement.routes.js";
 import reportRoutes from "./reports.routes.js";
+import adminSettingsRoutes from "./adminSettings.routes.js";
+
 const router = express.Router();
 router.use(authenticateJWT);
 router.use(authorizeRoles("admin"));
@@ -25,4 +27,5 @@ router.use("/teachers", teacherRoutes);
 router.use("/timetable", timetableRoutes);
 router.use("/announcements", announcementRoutes);
 router.use("/reports", reportRoutes);
+router.use("/admin-settings", adminSettingsRoutes); // Assuming you have a separate route for admin settings
 export default router;
