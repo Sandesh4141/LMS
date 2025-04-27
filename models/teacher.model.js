@@ -151,18 +151,14 @@ const changeTeacherPassword = async (teacherId, newPassword) => {
 const getTeacherAssignedCourse = async (teacherId) => {
   const query = `
     SELECT DISTINCT c.id AS course_id, c.course_name
-    FROM subjects s
+    FROM teacher_subjects ts
+    JOIN subjects s ON ts.subject_id = s.id
     JOIN courses c ON s.course_id = c.id
-    WHERE s.teacher_id = $1;
+    WHERE ts.teacher_id = $1;
   `;
 
-  console.log("Fetching assigned courses for Teacher ID:", teacherId);
-
   const result = await pool.query(query, [teacherId]);
-
-  console.log("Assigned Courses Query Result:", result.rows); // 🔥 Debug Log
-
-  return result.rows; // Ensure we return an array, not a single object
+  return result.rows;
 };
 
 // =================== 📌 TEACHER SUBJECTS ===================
@@ -172,10 +168,20 @@ const getTeacherAssignedCourse = async (teacherId) => {
  */
 const getTeacherSubjects = async (teacherId) => {
   const query = `
-    SELECT s.id, s.subject_name, s.credits, c.course_name
-    FROM subjects s
-    JOIN courses c ON s.course_id = c.id
-    WHERE s.teacher_id = $1;
+    SELECT 
+      s.id, 
+      s.subject_name, 
+      s.credits, 
+      c.course_name
+       
+    FROM 
+      subjects s
+    JOIN 
+      teacher_subjects ts ON ts.subject_id = s.id
+    JOIN 
+      courses c ON s.course_id = c.id
+    WHERE 
+      ts.teacher_id = $1;
   `;
 
   const result = await pool.query(query, [teacherId]);
@@ -183,13 +189,16 @@ const getTeacherSubjects = async (teacherId) => {
 };
 
 // =================== 📌 COURSE MATERIAL UPLOAD ===================
-
 /**
  * Verify if a teacher is assigned to a subject before uploading content
  */
 const verifyTeacherSubject = async (teacherId, subjectId) => {
-  const checkQuery = `SELECT * FROM subjects WHERE id = $1 AND teacher_id = $2;`;
-  const checkResult = await pool.query(checkQuery, [subjectId, teacherId]);
+  const checkQuery = `
+    SELECT 1
+    FROM teacher_subjects
+    WHERE teacher_id = $1 AND subject_id = $2;
+  `;
+  const checkResult = await pool.query(checkQuery, [teacherId, subjectId]);
   return checkResult.rows.length > 0;
 };
 
@@ -220,9 +229,10 @@ const getEnrolledStudentsByCourse = async (courseId) => {
 const getSubjectsForTeacher = async (teacherId, courseId) => {
   const query = `
     SELECT s.id, s.subject_name, s.credits, c.course_name
-    FROM subjects s
+    FROM teacher_subjects ts
+    JOIN subjects s ON ts.subject_id = s.id
     JOIN courses c ON s.course_id = c.id
-    WHERE s.teacher_id = $1 AND s.course_id = $2;
+    WHERE ts.teacher_id = $1 AND s.course_id = $2;
   `;
 
   const result = await pool.query(query, [teacherId, courseId]);
@@ -238,9 +248,10 @@ const getSubjectDetailsForTeacher = async (teacherId, subjectId) => {
       s.credits, 
       c.course_name, 
       c.department_id
-    FROM subjects s
+    FROM teacher_subjects ts
+    JOIN subjects s ON ts.subject_id = s.id
     JOIN courses c ON s.course_id = c.id
-    WHERE s.teacher_id = $1 AND s.id = $2;
+    WHERE ts.teacher_id = $1 AND s.id = $2;
   `;
 
   const result = await pool.query(query, [teacherId, subjectId]);
@@ -269,13 +280,15 @@ const createAssignmentWithMaterial = async (
 };
 
 /**
- * ✅ Fetch assignments for a subject with materials
+ * Fetch assignments for a subject with materials
  */
 const getAssignmentsBySubject = async (subjectId) => {
   const query = `SELECT * FROM assignments WHERE subject_id = $1 ORDER BY due_date ASC;`;
   const result = await pool.query(query, [subjectId]);
   return result.rows;
 };
+
+// ======================  Teacher Dashboard ============================
 
 export {
   addTeacher,

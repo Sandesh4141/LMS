@@ -85,42 +85,32 @@ const deleteStudentByID = async (id) => {
   return result.rows[0];
 };
 
-const updateStudentByID = async (id, formData) => {
-  const {
-    name,
-    email,
-    phone,
-    dob,
-    gender,
-    department,
-    course_id,
-    enrollment_year,
-    year_of_study,
-    address,
-  } = formData;
+// update studet by ID
+const updateStudentByID = async (id, updates) => {
+  if (!updates || Object.keys(updates).length === 0) {
+    throw new Error("No fields provided to update");
+  }
 
-  const result = await pool.query(
-    `UPDATE students
-     SET name = $1, email = $2, phone = $3, dob = $4, gender = $5, department = $6, course_id = $7, enrollment_year = $8, year_of_study = $9, address = $10, updated_at = NOW()
-     WHERE id = $11
-     RETURNING *`,
-    [
-      name,
-      email,
-      phone,
-      dob,
-      gender,
-      department,
-      course_id,
-      enrollment_year,
-      year_of_study,
-      address,
-      id,
-    ]
-  );
+  // Extract and remove studentId if present in payload
+  if (updates.studentId) {
+    delete updates.studentId;
+  }
 
+  const keys = Object.keys(updates);
+  const values = Object.values(updates);
+
+  const setClause = keys.map((key, index) => `${key} = $${index + 1}`).join(", ");
+  const query = `
+    UPDATE students
+    SET ${setClause}, updated_at = NOW()
+    WHERE id = $${keys.length + 1}
+    RETURNING *;
+  `;
+
+  const result = await pool.query(query, [...values, id]);
   return result.rows[0];
 };
+
 
 const assignCoursesToStudent = async (studentId, programId, year, semester) => {
   const result = await pool.query(

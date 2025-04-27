@@ -37,7 +37,12 @@ const fetchDepartmentById = async (req, res) => {
 
 /* Create a new department */
 const createNewDepartment = async (req, res) => {
-  const { programName, programCode, description } = req.body;
+  const {
+    program_name: programName,
+    program_code: programCode,
+    description,
+  } = req.body;
+
   try {
     const newDepartment = await createDepartment(
       programName,

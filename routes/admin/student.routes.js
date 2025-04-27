@@ -16,10 +16,9 @@ import {
 router.get("/", getStudents);
 router.post("/", createStudent);
 
-
 router.get("/:id", getSpecificStudent);
 router.delete("/:id", deleteStudentWithSpecificID);
-router.put("/:id", updateStudentWithSpecificID);
+router.patch("/:id", updateStudentWithSpecificID);
 router.get("/:id/credentials", getStudentCredentials);
 
 // GET /student/dashboard
